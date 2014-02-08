@@ -112,8 +112,20 @@ class ContiguityWeights_binning:
                 for j in potentialNeighbors:
                     if polyId < j:
                         if bbcommon(bbcache[polyId], bbcache[j]):
+                            overlap_box_xmin  = bbcache[j][0]  if bbcache[polyId][0] < bbcache[j][0] else bbcache[polyId][0]
+                            overlap_box_xmax = bbcache[j][2] if overlap_box_xmin == bbcache[polyId][0] else bbcache[polyId][2]
+                            overlap_box_ymin  = bbcache[j][1]  if bbcache[polyId][1] < bbcache[j][1] else bbcache[polyId][1]
+                            overlap_box_ymax = bbcache[j][3] if overlap_box_ymin == bbcache[polyId][1] else bbcache[polyId][3]
                             if j not in vertCache:
                                 vertCache[j] = set(shpFileObject.get(j).vertices)
+                            #Note: xunli@asu.edu
+                            #python set.intersection(s,t) time complexity:
+                            #    Average--O(min(len(s), len(t))  worst--O(len(s) * len(t))
+                            #    https://wiki.python.org/moin/TimeComplexity
+                            #    There is also a memory operation to create result set
+                            #1. it is expensive once you have very complexy polygons
+                            #2. this host polygon will do a O(min(s,t)) * num_neighbors 
+                            #    algorithm to find contiguity neighbors
                             common = vertCache[polyId].intersection(vertCache[j])
                             if len(common) > 0:
                                 w[polyId].add(j)
