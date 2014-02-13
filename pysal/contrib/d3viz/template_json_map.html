@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<title>Albers Projection</title>
+<style>
+
+
+path {
+  fill: #ccc;
+  stroke: #000;
+  stroke-linejoin: round;
+}
+
+.boundary {
+  pointer-events: none;
+  fill: none;
+  stroke: #fff;
+  stroke-width: .5px;
+  stroke-linejoin: round;
+}
+.selected {
+  fill: yellow;
+}
+.unselected {
+  fill: #ccc;
+}
+
+</style>
+<script src="d3.v3.min.js"></script>
+<script src="topojson.v1.min.js"></script>
+<body>
+<script type="text/javascript">
+//Width and height
+var w = 960;
+var h = 500;
+var projection = d3.geo.equirectangular().translate([w/2, h/2]).scale([150]);
+var path = d3.geo.path().projection(projection);
+
+//Create SVG element
+var svg = d3.select("body")
+  .append("svg")
+  .attr("width", w)
+  .attr("height", h);
+
+//Load in GeoJSON data
+d3.json("http://127.0.0.1:8000/countries.geo.json", function(json) {
+  var district = svg.append("g")
+    .selectAll("path")
+    .data(json.features)
+    .enter().append("path")
+    .attr("d", path);
+              
+  district.append("title")
+    .text(function(d){return d.id;});
+   
+  district
+    .each(function(d,i){ 
+    })
+    .on("mouseover", function(d){
+      console.log(d3.select(this));
+      d3.select(this).attr("class", "selected"); 
+      } )
+    .on("mouseout", function(d){
+      console.log(d3.select(this));
+      d3.select(this).attr("class", "unselected"); 
+      } );
+    
+});
+
+localStorage.selectedid = [1,2];
+//Using Jquery.twFile to write current selection back to local file
+//the pysal will read the local file to get current selection
+</script>
+</body>
