@@ -14,51 +14,51 @@ class G:
     """
     Global G Autocorrelation Statistic
 
-    Parameters:
-    -----------
-    y: array
-    w: DistanceBand W
-       spatial weights based on distance band
-    permutations: int
-                  the number of random permutations for calculating
-                  pseudo p_values
+    Parameters
+    ----------
+    y             : array (n,1)
+                    Attribute values
+    w             : W
+                   DistanceBand W spatial weights based on distance band
+    permutations  : int
+                    the number of random permutations for calculating pseudo p_values
 
-    Attributes:
-    -----------
-    y: array
-       original variable
-    w: DistanceBand W
-       spatial weights based on distance band
-    permutation: int
-                 the number of permutations
-    G: float
-       the value of statistic
-    EG: float
-        the expected value of statistic
-    VG: float
-        the variance of G under normality assumption
-    z_norm: float
-         standard normal test statistic
-    p_norm: float
-            p-value under normality assumption (one-sided)
-    sim: array (if permutations > 0)
-         vector of G values for permutated samples
-    p_sim: float
-           p-value based on permutations (one-sided)
-           null: spatial randomness
-           alternative: the observed G is extreme
-                        it is either extremely high or extremely low
-    EG_sim: float
-            average value of G from permutations
-    VG_sim: float
-            variance of G from permutations
-    seG_sim: float
-             standard deviation of G under permutations.
-    z_sim: float
-           standardized G based on permutations
-    p_z_sim: float
-             p-value based on standard normal approximation from
-             permutations (one-sided)
+    Attributes
+    ----------
+    y             : array
+                    original variable
+    w             : W
+                    DistanceBand W spatial weights based on distance band
+    permutation   : int
+                    the number of permutations
+    G             : float
+                    the value of statistic
+    EG            : float
+                    the expected value of statistic
+    VG            : float
+                    the variance of G under normality assumption
+    z_norm        : float
+                    standard normal test statistic
+    p_norm        : float
+                    p-value under normality assumption (one-sided)
+    sim           : array
+                    (if permutations > 0)
+                    vector of G values for permutated samples
+    p_sim         : float
+                    p-value based on permutations (one-sided)
+                    null: spatial randomness
+                    alternative: the observed G is extreme it is either extremely high or extremely low
+    EG_sim        : float
+                    average value of G from permutations
+    VG_sim        : float
+                    variance of G from permutations
+    seG_sim       : float
+                    standard deviation of G under permutations.
+    z_sim         : float
+                    standardized G based on permutations
+    p_z_sim       : float
+                    p-value based on standard normal approximation from
+                    permutations (one-sided)
 
     Notes
     -----
@@ -71,16 +71,13 @@ class G:
     >>> numpy.random.seed(10)
 
     Preparing a point data set
-
     >>> points = [(10, 10), (20, 10), (40, 10), (15, 20), (30, 20), (30, 30)]
 
     Creating a weights object from points
-
     >>> w = DistanceBand(points,threshold=15)
     >>> w.transform = "B"
 
-    Prepareing a variable
-
+    Preparing a variable
     >>> y = numpy.array([2, 3, 3.2, 5, 8, 7])
 
     Applying Getis and Ord G test
@@ -94,6 +91,7 @@ class G:
     0.1729
 
     """
+
     def __init__(self, y, w, permutations=PERMUTATIONS):
         self.n = len(y)
         self.y = y
@@ -163,64 +161,63 @@ class G:
 
 class G_Local:
     """
-    Generalized Local G Autocorrelation Statistic
+    Generalized Local G Autocorrelation
+    Statistic [Getis1992]_, [Ord1995]_, [Getis1996]_ .
 
-    Parameters:
-    -----------
-    y: array
-       variable
-    w: DistanceBand W
-       weights instance that is based on threshold distance
-       and is assumed to be aligned with y
-    transform: string
-       the type of w, either 'B' (binary) or 'R' (row-standardized)
-    permutations: int
+    Parameters
+    ----------
+    y : array
+        variable
+    w : W
+        DistanceBand, weights instance that is based on threshold distance
+        and is assumed to be aligned with y
+    transform : {'R', 'B'}
+                the type of w, either 'B' (binary) or 'R' (row-standardized)
+    permutations : int
                   the number of random permutations for calculating
                   pseudo p values
-    star: boolean
-          whether or not to include focal observation in sums
-          default is False
+    star : boolean
+           whether or not to include focal observation in sums (default: False)
 
-    Attributes:
-    -----------
-    y: array
+    Attributes
+    ----------
+    y : array
        original variable
-    w: DistanceBand W
+    w : DistanceBand W
        original weights object
     permutations: int
-                 the number of permutations
-    Gs: array of floats
-        the value of the orginal G statistic in Getis & Ord (1992)
-    EGs: float
+                  the number of permutations
+    Gs : array
+        of floats, the value of the orginal G statistic in Getis & Ord (1992)
+    EGs : float
          expected value of Gs under normality assumption
          the values is scalar, since the expectation is identical
          across all observations
-    VGs: array of floats
-         variance values of Gs under normality assumption
-    Zs: array of floats
-        standardized Gs
-    p_norm: array of floats
-            p-value under normality assumption (one-sided)
+    VGs : array
+         of floats, variance values of Gs under normality assumption
+    Zs : array
+        of floats, standardized Gs
+    p_norm : array
+            of floats, p-value under normality assumption (one-sided)
             for two-sided tests, this value should be multiplied by 2
-    sim: array of arrays of floats (if permutations>0)
-         vector of I values for permutated samples
-    p_sim: array of floats
-           p-value based on permutations (one-sided)
-           null: spatial randomness
-           alternative: the observed G is extreme
-                        it is either extremely high or extremely low
-    EG_sim: array of floats
-            average value of G from permutations
-    VG_sim: array of floats
-            variance of G from permutations
-    seG_sim: array of floats
-             standard deviation of G under permutations.
-    z_sim: array of floats
-           standardized G based on permutations
-    p_z_sim: array of floats
-             p-value based on standard normal approximation from
+    sim : array
+         of arrays of floats (if permutations>0), vector of I values
+         for permutated samples
+    p_sim : array
+           of floats, p-value based on permutations (one-sided)
+           null - spatial randomness
+           alternative - the observed G is extreme it is either extremely high or extremely low
+    EG_sim : array
+            of floats, average value of G from permutations
+    VG_sim : array
+            of floats, variance of G from permutations
+    seG_sim : array
+             of floats, standard deviation of G under permutations.
+    z_sim : array
+           of floats, standardized G based on permutations
+    p_z_sim : array
+             of floats, p-value based on standard normal approximation from
              permutations (one-sided)
-
     Notes
     -----
     To compute moments of Gs under normality assumption,
@@ -228,16 +225,6 @@ class G_Local:
     For binary weights object, the weight value for self is 1
     For row-standardized weights object, the weight value for self is
     1/(the number of its neighbors + 1).
-
-    References
-    ----------
-    Getis, A. and Ord., J.K. (1992) The analysis of spatial association by use of
-    distance statistics. Geographical Analysis, 24(3):189-206
-    Ord, J.K. and Getis, A. (1995) Local spatial autocorrelation statistics:
-    distributional issues and an application. Geographical Analysis, 27(4):286-306
-    Getis, A. and Ord, J. K. (1996) Local spatial statistics: an overview,
-    in Spatial Analysis: Modelling in a GIS Environment, edited by Longley, P.
-    and Batty, M.
 
     Examples
     --------

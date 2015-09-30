@@ -19,11 +19,9 @@ __all__ = ["IntervalTree", "Grid", "BruteForcePointLocator",
 class IntervalTree:
     """
     Representation of an interval tree. An interval tree is a data structure which is used to
-    quickly determine which intervals in a set contain a value or overlap with a query interval.
+    quickly determine which intervals in a set contain a value or overlap with
+    a query interval. [DeBerg2008]_
 
-    Reference:
-    de Berg, van Kreveld, Overmars, Schwarzkopf. Computational Geometry: Algorithms and Application.
-    212-217. Springer-Verlag, Berlin, 2000.
     """
 
     class _Node:
@@ -104,10 +102,6 @@ class IntervalTree:
         ----------
         intervals : a list of (lower, upper, item) elements to build the interval tree
 
-        Attributes
-        ----------
-
-
         Examples
         --------
 
@@ -144,9 +138,6 @@ class IntervalTree:
         ----------
 
         q : a value or interval to find intervals intersecting
-
-        Attributes
-        ----------
 
         Examples
         --------
@@ -289,11 +280,8 @@ class Grid:
 
         Parameters
         ----------
-        item -- the item to insert into the grid
-        pt -- the location to insert the item at
-
-        Attributes
-        ----------
+        item  : the item to insert into the grid
+        pt : the location to insert the item at
 
         Examples
         --------
@@ -319,11 +307,8 @@ class Grid:
 
         Parameters
         ----------
-        item -- the item to remove from the grid
-        pt -- the location the item was added at
-
-        Attributes
-        ----------
+        item : the item to remove from the grid
+        pt : the location the item was added at
 
         Examples
         --------
@@ -352,9 +337,6 @@ class Grid:
         ----------
         item     : the item to remove from the grid
         pt       : the location the item was added at
-
-        Attributes
-        ----------
 
         Examples
         --------
@@ -393,9 +375,6 @@ class Grid:
         pt : the location to search around
         r  : the distance to search around the point
 
-        Attributes
-        ----------
-
         Examples
         --------
         >>> g = Grid(Rectangle(0, 0, 10, 10), 1)
@@ -428,9 +407,6 @@ class Grid:
         Parameters
         ----------
         pt : the location to search near
-
-        Attributes
-        ----------
 
         Examples
         --------
@@ -480,9 +456,6 @@ class BruteForcePointLocator:
         ----------
         points : a list of points to index (Point list)
 
-        Attributes
-        ----------
-
         Examples
         --------
         >>> pl = BruteForcePointLocator([Point((0, 0)), Point((5, 0)), Point((0, 10))])
@@ -498,9 +471,6 @@ class BruteForcePointLocator:
         Parameters
         ----------
         query_point : a point to find the nearest indexed point to
-
-        Attributes
-        ----------
 
         Examples
         --------
@@ -522,9 +492,6 @@ class BruteForcePointLocator:
         ----------
         region_rect : the rectangular range to find indexed points in
 
-        Attributes
-        ----------
-
         Examples
         --------
         >>> points = [Point((0, 0)), Point((1, 6)), Point((5.4, 1.4))]
@@ -545,9 +512,6 @@ class BruteForcePointLocator:
         ----------
         origin  : the point to find indexed points near
         r       : the maximum distance to find indexed point from the origin point
-
-        Attributes
-        ----------
 
         Examples
         --------
@@ -580,9 +544,6 @@ class PointLocator:
         ----------
         points : a list of points to index
 
-        Attributes
-        ----------
-
         Examples
         --------
         >>> points = [Point((0, 0)), Point((1, 6)), Point((5.4, 1.4))]
@@ -599,9 +560,6 @@ class PointLocator:
         Parameters
         ----------
         query_point : a point to find the nearest indexed point to
-
-        Attributes
-        ----------
 
         Examples
         --------
@@ -622,9 +580,6 @@ class PointLocator:
         Parameters
         ----------
         region_rect : the rectangular range to find indexed points in
-
-        Attributes
-        ----------
 
         Examples
         --------
@@ -657,9 +612,6 @@ class PointLocator:
         origin  : the point to find indexed points near
         r       : the maximum distance to find indexed point from the origin point
 
-        Attributes
-        ----------
-
         Examples
         --------
         >>> points = [Point((0, 0)), Point((1, 6)), Point((5.4, 1.4))]
@@ -685,9 +637,6 @@ class PolygonLocator:
         ----------
         polygons : a list of polygons to index
 
-        Attributes
-        ----------
-
         Examples
         --------
         >>> p1 = Polygon([Point((0, 1)), Point((4, 5)), Point((5, 1))])
@@ -710,9 +659,6 @@ class PolygonLocator:
     def inside(self, query_rectangle):
         """
         Returns polygons that are inside query_rectangle
-
-        Attributes
-        ----------
 
         Examples
         --------
@@ -806,11 +752,8 @@ class PolygonLocator:
         >>> len(res)
         1
 
-
         Notes
         -----
-
-
         overlapping means the intersection of the query rectangle and a
         polygon is not empty and is no larger than the area of the polygon
         """
@@ -929,9 +872,6 @@ class PolygonLocator:
                  query_point
                  edge   -- measures the distance between edges and query_point
 
-        Attributes
-        ----------
-
         Examples
         --------
         >>> p1 = Polygon([Point((0, 1)), Point((4, 5)), Point((5, 1))])
@@ -952,9 +892,6 @@ class PolygonLocator:
         Parameters
         ----------
         region_rect  : the rectangular range to find indexed polygons in
-
-        Attributes
-        ----------
 
         Examples
         --------
@@ -1028,14 +965,11 @@ class PolygonLocator:
         origin  : the point to find indexed polygons near
         r       : the maximum distance to find indexed polygon from the origin point
 
-       rule     : representative point for polygon in nearest query.
+        rule    : representative point for polygon in nearest query.
                 vertex -- measures distance between vertices and query_point
                 centroid -- measures distance between centroid and
                 query_point
                 edge   -- measures the distance between edges and query_point
-
-        Attributes
-        ----------
 
         Examples
         --------

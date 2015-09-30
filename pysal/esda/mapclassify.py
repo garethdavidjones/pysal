@@ -2,13 +2,21 @@
 A module of classification schemes for choropleth mapping.
 """
 __author__ = "Sergio J. Rey"
-__credits__ = "Copyright (c) 2009-10 Sergio J. Rey"
 
-__all__ = ['quantile', 'Map_Classifier', 'Box_Plot', 'Equal_Interval', 'Fisher_Jenks', 'Fisher_Jenks_Sampled', 'Jenks_Caspall', 'Jenks_Caspall_Forced', 'Jenks_Caspall_Sampled', 'Max_P_Classifier', 'Maximum_Breaks', 'Natural_Breaks', 'Quantiles', 'Percentiles', 'Std_Mean', 'User_Defined', 'gadf', 'K_classifiers']
+__all__ = ['Map_Classifier', 'quantile', 'Box_Plot', 'Equal_Interval',
+           'Fisher_Jenks', 'Fisher_Jenks_Sampled', 'Jenks_Caspall',
+           'Jenks_Caspall_Forced', 'Jenks_Caspall_Sampled',
+           'Max_P_Classifier', 'Maximum_Breaks', 'Natural_Breaks',
+           'Quantiles', 'Percentiles', 'Std_Mean', 'User_Defined',
+           'gadf', 'K_classifiers']
 
-from pysal.common import *
 
 K = 5  # default number of classes in any map scheme with this as an argument
+import numpy as np
+import scipy.stats as stats
+import scipy as sp
+import copy
+import sys
 
 
 def quantile(y, k=4):
@@ -17,15 +25,15 @@ def quantile(y, k=4):
 
     Parameters
     ----------
-    y : array (n,1)
-        values to classify
+    y : array
+        (n,1), values to classify
     k : int
         number of quantiles
 
     Returns
     -------
-    implicit  : array (n,1)
-                quantile values
+    implicit  : array
+                (n,1), quantile values
 
     Examples
     --------
@@ -37,7 +45,8 @@ def quantile(y, k=4):
     >>>
 
     Note that if there are enough ties that the quantile values repeat, we
-    collapse to pseudo quantiles in which case the number of classes will be less than k
+    collapse to pseudo quantiles in which case the number of classes will be
+    less than k
 
     >>> x = [1.0] * 100
     >>> x.extend([3.0] * 40)
@@ -61,15 +70,15 @@ def binC(y, bins):
 
     Parameters
     ----------
-    y : array (n,q)
-        categorical values
-    bins :  array (k,1)
-        unique values associated with each bin
+    y : array
+        (n,q), categorical values
+    bins : array
+           (k,1),  unique values associated with each bin
 
     Return
     ------
-    b : array (n,q)
-        bin membership, values between 0 and k-1
+    b : array
+        (n,q), bin membership, values between 0 and k-1
 
     Examples
     --------
@@ -127,15 +136,15 @@ def bin(y, bins):
 
     Parameters
     ----------
-    y : array (n,q)
-        values to bin
-    bins : array (k,1)
-        upper bounds of each bin (monotonic)
+    y : array
+        (n,q), values to bin
+    bins : array
+           (k,1), upper bounds of each bin (monotonic)
 
     Returns
     -------
-    b : array (n,q)
-        values of values between 0 and k-1
+    b : array
+        (n,q), values of values between 0 and k-1
 
     Examples
     --------
@@ -191,18 +200,18 @@ def bin1d(x, bins):
 
     Parameters
     ----------
-    y : 1-d array
-        values to bin
-    bins : array (k,1)
-        upper bounds of each bin (monotonic)
+    x : array
+        (n, 1), values to bin
+    bins : array
+           (k,1), upper bounds of each bin (monotonic)
 
     Returns
     -------
-    tuple(binIds,counts)
+    binIds : array
+             1-d array of integer bin Ids
 
-    binIds: 1-d array of integer bin Ids
-
-    counts: number of elements of x falling in each bin
+    counts: int
+            number of elements of x falling in each bin
 
     Examples
     --------
@@ -234,7 +243,8 @@ def bin1d(x, bins):
 
 def load_example():
     """
-    Helper function for doc tests"""
+    Helper function for doc tests
+    """
     import pysal
     np.random.seed(10)
     dat = pysal.open(pysal.examples.get_path('calempdensity.csv'))
@@ -247,10 +257,9 @@ def natural_breaks(values, k=5, itmax=100):
     natural breaks helper function
     """
     values = np.array(values)
-    n = len(values)
     uv = np.unique(values)
     uvk = len(uv)
-    if  uvk < k:
+    if uvk < k:
         print 'Warning: Not enough unique values in array to form k classes'
         print "Warning: setting k to %d" % uvk
         k = uvk
@@ -273,7 +282,7 @@ def natural_breaks(values, k=5, itmax=100):
         # assign value to that centroid
         c1 = diffs.argmin(axis=0)
         c1 = np.array(c1)[0]
-        #compare new classids to previous
+        # compare new classids to previous
         d = abs(c1 - c0)
         if d.sum() == 0:
             solving = False
@@ -360,11 +369,57 @@ def _fisher_jenks_means(values, classes=5, sort=True):
 
 class Map_Classifier:
     """
-    Abstract class for all map classifications """
+    Abstract class for all map classifications [Slocum2008]_
+
+    For an array :math:`y` of :math:`n` values, a map classifier places each value
+    :math:`y_i` into one of :math:`k` mutually exclusive and exhaustive classes.
+    Each classifer defines the classes based on different criteria, but in all
+    cases the following hold for the classifiers in PySAL:
+
+    .. math::
+
+              C_j^l < y_i \le C_j^u \  forall  i \in C_j
+
+    where :math:`C_j` denotes class :math:`j` which has lower bound
+          :math:`C_j^l` and upper bound :math:`C_j^u`.
+
+
+
+
+
+    Map Classifiers Supported
+
+    * :class:`~pysal.esda.mapclassify.Box_Plot`
+    * :class:`~pysal.esda.mapclassify.Equal_Interval`
+    * :class:`~pysal.esda.mapclassify.Fisher_Jenks`
+    * :class:`~pysal.esda.mapclassify.Fisher_Jenks_Sampled`
+    * :class:`~pysal.esda.mapclassify.Jenks_Caspall`
+    * :class:`~pysal.esda.mapclassify.Jenks_Caspall_Forced`
+    * :class:`~pysal.esda.mapclassify.Jenks_Caspall_Sampled`
+    * :class:`~pysal.esda.mapclassify.Max_P_Classifier`
+    * :class:`~pysal.esda.mapclassify.Maximum_Breaks`
+    * :class:`~pysal.esda.mapclassify.Natural_Breaks`
+    * :class:`~pysal.esda.mapclassify.Quantiles`
+    * :class:`~pysal.esda.mapclassify.Percentiles`
+    * :class:`~pysal.esda.mapclassify.Std_Mean`
+    * :class:`~pysal.esda.mapclassify.User_Defined`
+
+    Utilities:
+
+    In addition to the classifiers, there are several utility functions that
+    can be used to evaluate the properties of a specific classifier for
+    different parameter values, or for automatic selection of a classifier and
+    number of classes.
+
+    * :func:`~pysal.esda.mapclassify.gadf`
+    * :class:`~pysal.esda.mapclassify.K_classifiers`
+
+    """
+
     def __init__(self, y):
         self.name = 'Map Classifier'
         if hasattr(y, 'values'):
-            y = y.values # fix for pandas
+            y = y.values  # fix for pandas
         self.y = y
         self._classify()
         self._summary()
@@ -438,7 +493,6 @@ class Map_Classifier:
         width = largest
         fmt = "%d.%df" % (width, decimal)
         fmt = "%" + fmt
-        k1 = self.k - 1
         h1 = "Lower"
         h1 = h1.center(largest)
         h2 = " "
@@ -456,7 +510,6 @@ class Map_Classifier:
         table.append(header)
         table.append("=" * len(header))
 
-        rows = []
         for i, up in enumerate(self.bins):
             if i == 0:
                 left = " " * width
@@ -484,24 +537,25 @@ class Equal_Interval(Map_Classifier):
 
     Parameters
     ----------
-    y : array (n,1)
-        values to classify
+    y : array
+        (n,1), values to classify
     k : int
         number of classes required
 
     Attributes
     ----------
 
-    yb      : array (n,1)
-              bin ids for observations,
+    yb      : array
+              (n,1), bin ids for observations,
               each value is the id of the class the observation belongs to
-              yb[i] = j  for j>=1  if bins[j-1] < y[i] <= bins[j], yb[i] = 0  otherwise
-    bins    : array (k,1)
-              the upper bounds of each class
+              yb[i] = j  for j>=1  if bins[j-1] < y[i] <= bins[j], yb[i] = 0
+              otherwise
+    bins    : array
+              (k,1), the upper bounds of each class
     k       : int
               the number of classes
-    counts  : array (k,1)
-              the number of observations falling in each class
+    counts  : array
+              (k,1), the number of observations falling in each class
 
     Examples
     --------
@@ -576,7 +630,8 @@ class Percentiles(Map_Classifier):
              the number of classes
 
     counts : int
-             the number of observations falling in each class (numpy array k x 1)
+             the number of observations falling in each class
+             (numpy array k x 1)
 
     Examples
     --------
@@ -622,14 +677,14 @@ class Box_Plot(Map_Classifier):
 
     Attributes
     ----------
-    yb : array (n,1)
-        bin ids for observations
-    bins : array (n,1)
-        the upper bounds of each class  (monotonic)
+    yb : array
+        (n,1), bin ids for observations
+    bins : array
+          (n,1), the upper bounds of each class  (monotonic)
     k : int
         the number of classes
-    counts : array (k,1)
-        the number of observations falling in each class
+    counts : array
+             (k,1), the number of observations falling in each class
     low_outlier_ids : array
         indices of observations that are low outliers
     high_outlier_ids : array
@@ -650,9 +705,9 @@ class Box_Plot(Map_Classifier):
     where q is an array of the first three quartiles of y and
     IQR=q[2]-q[0]
 
-
-    If q[2]+hinge*IQR > max(y) there will only be 5 classes and no high outliers,
-        otherwise, there will be 6 classes and at least one high outlier.
+    If q[2]+hinge*IQR > max(y) there will only be 5 classes and no high
+    outliers, otherwise, there will be 6 classes and at least one high
+    outlier.
 
     Examples
     --------
@@ -711,28 +766,30 @@ class Box_Plot(Map_Classifier):
 
 
 class Quantiles(Map_Classifier):
-    """Quantile Map Classification
+    """
+    Quantile Map Classification
 
     Parameters
     ----------
-    y : array (n,1)
-        values to classify
+    y : array
+        (n,1), values to classify
     k : int
         number of classes required
 
     Attributes
     ----------
 
-    yb      : array (n,1)
-              bin ids for observations,
+    yb      : array
+              (n,1), bin ids for observations,
               each value is the id of the class the observation belongs to
-              yb[i] = j  for j>=1  if bins[j-1] < y[i] <= bins[j], yb[i] = 0  otherwise
-    bins    : array (k,1)
-              the upper bounds of each class
+              yb[i] = j  for j>=1  if bins[j-1] < y[i] <= bins[j], yb[i] = 0
+              otherwise
+    bins    : array
+              (k,1), the upper bounds of each class
     k       : int
               the number of classes
-    counts  : array (k,1)
-              the number of observations falling in each class
+    counts  : array
+              (k,1), the number of observations falling in each class
 
 
     Examples
@@ -764,8 +821,8 @@ class Std_Mean(Map_Classifier):
 
     Parameters
     ----------
-    y         : array (n,1)
-                values to classify
+    y         : array
+                (n,1), values to classify
     multiples : array
                 the multiples of the standard deviation to add/subtract from
                 the sample mean to define the bins, default=[-2,-1,1,2]
@@ -773,15 +830,14 @@ class Std_Mean(Map_Classifier):
     Attributes
     ----------
 
-    yb      : array (n,1)
-              bin ids for observations,
-    bins    : array (k,1)
-              the upper bounds of each class
+    yb      : array
+              (n,1), bin ids for observations,
+    bins    : array
+              (k,1), the upper bounds of each class
     k       : int
               the number of classes
-    counts  : array (k,1)
-              the number of observations falling in each class
-
+    counts  : array
+              (k,1), the number of observations falling in each class
 
     Examples
     --------
@@ -827,25 +883,29 @@ class Maximum_Breaks(Map_Classifier):
 
     Parameters
     ----------
-    y  : array (n x 1)
-         values to classify
+    y  : array
+         (n, 1), values to classify
 
     k  : int
          number of classes required
 
+    mindiff : float
+              The minimum difference between class breaks
+
     Attributes
     ----------
-    yb : array (nx1)
-         bin ids for observations
+    yb : array
+         (n, 1), bin ids for observations
 
-    bins : array (kx1)
-           the upper bounds of each class
+    bins : array
+           (k, 1), the upper bounds of each class
 
     k    : int
            the number of classes
 
-    counts : array (kx1)
-             the number of observations falling in each class (numpy array k x 1)
+    counts : array
+             (k, 1), the number of observations falling in each class (numpy
+             array k x 1)
 
     Examples
     --------
@@ -858,8 +918,9 @@ class Maximum_Breaks(Map_Classifier):
     >>> mb.counts
     array([50,  2,  4,  1,  1])
     >>>
+
     """
-    def __init__(self, y, k=K, mindiff=0):
+    def __init__(self, y, k=5, mindiff=0):
         self.k = k
         self.mindiff = mindiff
         Map_Classifier.__init__(self, y)
@@ -867,7 +928,6 @@ class Maximum_Breaks(Map_Classifier):
 
     def _set_bins(self):
         xs = self.y.copy()
-        y = self.y.copy()
         k = self.k
         xs.sort()
         min_diff = self.mindiff
@@ -896,24 +956,24 @@ class Natural_Breaks(Map_Classifier):
 
     Parameters
     ----------
-    y       : array (n,1)
-              values to classify
+    y       : array
+              (n,1), values to classify
     k       : int
               number of classes required
-    initial : int (default=100)
-              number of initial solutions to generate
+    initial : int
+              number of initial solutions to generate, (default=100)
 
     Attributes
     ----------
 
-    yb      : array (n,1)
-              bin ids for observations,
-    bins    : array (k,1)
-              the upper bounds of each class
+    yb      : array
+              (n,1), bin ids for observations,
+    bins    : array
+              (k,1), the upper bounds of each class
     k       : int
               the number of classes
-    counts  : array (k,1)
-              the number of observations falling in each class
+    counts  : array
+              (k,1), the number of observations falling in each class
 
     Examples
     --------
@@ -926,25 +986,27 @@ class Natural_Breaks(Map_Classifier):
     >>> nb.counts
     array([14, 13, 14, 10,  7])
     >>> nb.bins
-    [1.8100000000000001, 7.5999999999999996, 29.82, 181.27000000000001, 4111.4499999999998]
+    array([  1.81000000e+00,   7.60000000e+00,   2.98200000e+01,
+             1.81270000e+02,   4.11145000e+03])
     >>> x = np.array([1] * 50)
     >>> x[-1] = 20
     >>> nb = Natural_Breaks(x, k = 5, initial = 0)
     Warning: Not enough unique values in array to form k classes
     Warning: setting k to 2
     >>> nb.bins
-    [1, 20]
+    array([ 1, 20])
     >>> nb.counts
     array([49,  1])
 
 
     Notes
     -----
-    There is a tradeoff here between speed and consistency of the classification
+    There is a tradeoff here between speed and consistency of the
+    classification
     If you want more speed, set initial to a smaller value (0
     would result in the best speed, if you want more consistent classes in
-    multiple runs of Natural_Breaks on the same data, set initial to a higer
-    value.
+    multiple runs of Natural_Breaks on the same data, set initial to a
+    higher value.
 
 
     """
@@ -965,7 +1027,7 @@ class Natural_Breaks(Map_Classifier):
             fit_i = res[2].sum()
             if fit_i < fit:
                 res0 = res
-        self.bins = res0[-1]
+        self.bins = np.array(res0[-1])
         self.k = len(self.bins)
         self.iterations = res0[-2]
 
@@ -976,22 +1038,22 @@ class Fisher_Jenks(Map_Classifier):
 
     Parameters
     ----------
-    y : array (n,1)
-        values to classify
+    y : array
+        (n,1), values to classify
     k : int
         number of classes required
 
     Attributes
     ----------
 
-    yb      : array (n,1)
-              bin ids for observations
-    bins    : array (k,1)
-              the upper bounds of each class
+    yb      : array
+              (n,1), bin ids for observations
+    bins    : array
+              (k,1), the upper bounds of each class
     k       : int
               the number of classes
-    counts  : array (k,1)
-              the number of observations falling in each class
+    counts  : array
+              (k,1), the number of observations falling in each class
 
 
     Examples
@@ -1002,20 +1064,24 @@ class Fisher_Jenks(Map_Classifier):
     >>> fj.adcm
     799.24000000000001
     >>> fj.bins
-    [75.290000000000006, 192.05000000000001, 370.5, 722.85000000000002, 4111.45]
+    array([   75.29,   192.05,   370.5 ,   722.85,  4111.45])
     >>> fj.counts
     array([49,  3,  4,  1,  1])
     >>>
     """
 
     def __init__(self, y, k=K):
+
+        nu = len(np.unique(y))
+        if nu < k:
+            raise ValueError("Fewer unique values than specified classes.")
         self.k = k
         Map_Classifier.__init__(self, y)
         self.name = "Fisher_Jenks"
 
     def _set_bins(self):
         x = self.y.copy()
-        self.bins = _fisher_jenks_means(x, classes=self.k)[1:]
+        self.bins = np.array(_fisher_jenks_means(x, classes=self.k)[1:])
 
 
 class Fisher_Jenks_Sampled(Map_Classifier):
@@ -1024,49 +1090,34 @@ class Fisher_Jenks_Sampled(Map_Classifier):
 
     Parameters
     ----------
-    y      : array (n,1)
-             values to classify
+    y      : array
+             (n,1), values to classify
     k      : int
              number of classes required
     pct    : float
              The percentage of n that should form the sample
-             If pct is specified such that n*pct > 1000, then pct = 1000./n,
-             unless truncate is False
-    truncate: binary (Default True)
-             truncate pct in cases where pct * n > 1000.
-
+             If pct is specified such that n*pct > 1000, then
+             pct = 1000./n, unless truncate is False
+    truncate : boolean
+               truncate pct in cases where pct * n > 1000., (Default True)
 
     Attributes
     ----------
 
-    yb      : array (n,1)
-              bin ids for observations
-    bins    : array (k,1)
-              the upper bounds of each class
+    yb      : array
+              (n,1), bin ids for observations
+    bins    : array
+              (k,1), the upper bounds of each class
     k       : int
               the number of classes
-    counts  : array (k,1)
-              the number of observations falling in each class
-
+    counts  : array
+              (k,1), the number of observations falling in each class
 
     Examples
     --------
-    # turned off due to timing being different across hardware
-    #>>> import pysal
-    #>>> import numpy as np
-    #>>> import time
-    #>>> x = np.arange(1000)
-    #>>> t0=time.time();fj=pysal.esda.mapclassify.Fisher_Jenks(x,k=4);t1=time.time()
-    #>>> t2=time.time();fjs=pysal.esda.mapclassify.Fisher_Jenks_Sampled(x,k=4);t3=time.time()
-    #>>> print t1-t0
-    #1.84405994415
-    #>>> print t3-t2
-    #0.0295069217682
-    #>>> fj.tss
-    #5208250.0
-    #>>> fjs.tss
-    #5337860.0
-    #>>>
+
+    (Turned off due to timing being different across hardware)
+
     """
 
     def __init__(self, y, k=K, pct=0.10, truncate=True):
@@ -1100,22 +1151,22 @@ class Jenks_Caspall(Map_Classifier):
 
     Parameters
     ----------
-    y : array (n,1)
-        values to classify
+    y : array
+        (n,1), values to classify
     k : int
         number of classes required
 
     Attributes
     ----------
 
-    yb      : array (n,1)
-              bin ids for observations,
-    bins    : array (k,1)
-              the upper bounds of each class
+    yb      : array
+              (n,1), bin ids for observations,
+    bins    : array
+              (k,1), the upper bounds of each class
     k       : int
               the number of classes
-    counts  : array (k,1)
-              the number of observations falling in each class
+    counts  : array
+              (k,1), the number of observations falling in each class
 
 
     Examples
@@ -1141,7 +1192,7 @@ class Jenks_Caspall(Map_Classifier):
         q = quantile(x, k)
         solving = True
         xb, cnts = bin1d(x, q)
-        #class means
+        # class means
         if x.ndim == 1:
             x.shape = (x.size, 1)
         n, k = x.shape
@@ -1173,8 +1224,8 @@ class Jenks_Caspall_Sampled(Map_Classifier):
     Parameters
     ----------
 
-    y       : array (n,1)
-              values to classify
+    y       : array
+              (n,1), values to classify
     k       : int
               number of classes required
     pct     : float
@@ -1184,14 +1235,14 @@ class Jenks_Caspall_Sampled(Map_Classifier):
     Attributes
     ----------
 
-    yb      : array (n,1)
-              bin ids for observations,
-    bins    : array (k,1)
-              the upper bounds of each class
+    yb      : array
+              (n,1), bin ids for observations,
+    bins    : array
+              (k,1), the upper bounds of each class
     k       : int
               the number of classes
-    counts  : array (k,1)
-              the number of observations falling in each class
+    counts  : array
+              (k,1), the number of observations falling in each class
 
 
     Examples
@@ -1259,22 +1310,22 @@ class Jenks_Caspall_Forced(Map_Classifier):
 
     Parameters
     ----------
-    y : array (n,1)
-        values to classify
+    y : array
+        (n,1), values to classify
     k : int
         number of classes required
 
     Attributes
     ----------
 
-    yb      : array (n,1)
-              bin ids for observations,
-    bins    : array (k,1)
-              the upper bounds of each class
+    yb      : array
+              (n,1), bin ids for observations
+    bins    : array
+              (k,1), the upper bounds of each class
     k       : int
               the number of classes
-    counts  : array (k,1)
-              the number of observations falling in each class
+    counts  : array
+              (k,1), the number of observations falling in each class
 
 
     Examples
@@ -1314,19 +1365,17 @@ class Jenks_Caspall_Forced(Map_Classifier):
         q = quantile(x, k)
         solving = True
         xb, cnt = bin1d(x, q)
-        #class means
+        # class means
         if x.ndim == 1:
             x.shape = (x.size, 1)
         n, tmp = x.shape
         xm = [x[xb == i].mean() for i in np.unique(xb)]
-        xb0 = xb.copy()
         q = xm
         xbar = np.array([xm[xbi] for xbi in xb])
         xbar.shape = (n, 1)
         ss = x - xbar
         ss *= ss
         ss = sum(ss)
-        maxk = k - 1
         down_moves = up_moves = 0
         solving = True
         it = 0
@@ -1393,7 +1442,7 @@ class Jenks_Caspall_Forced(Map_Classifier):
             if not up_moves and not down_moves:
                 solving = False
             it += 1
-        cuts = [max(x[xb == i]) for i in sp.unique(xb)]
+        cuts = [max(x[xb == c]) for c in sp.unique(xb)]
         self.bins = np.array(cuts)
         self.iterations = it
 
@@ -1405,22 +1454,22 @@ class User_Defined(Map_Classifier):
 
     Parameters
     ----------
-    y    : array (n,1)
-           values to classify
-    bins : array (k,1)
-           upper bounds of classes (have to be monotically increasing)
+    y    : array
+           (n,1), values to classify
+    bins : array
+           (k,1), upper bounds of classes (have to be monotically increasing)
 
     Attributes
     ----------
 
-    yb      : array (n,1)
-              bin ids for observations,
-    bins    : array (k,1)
-              the upper bounds of each class
+    yb      : array
+              (n,1), bin ids for observations,
+    bins    : array
+              (k,1), the upper bounds of each class
     k       : int
               the number of classes
-    counts  : array (k,1)
-              the number of observations falling in each class
+    counts  : array
+              (k,1), the number of observations falling in each class
 
 
     Examples
@@ -1471,8 +1520,8 @@ class Max_P_Classifier(Map_Classifier):
 
     Parameters
     ----------
-    y       : array (n,1)
-              values to classify
+    y       : array
+              (n,1), values to classify
     k       : int
               number of classes required
     initial : int
@@ -1481,14 +1530,14 @@ class Max_P_Classifier(Map_Classifier):
     Attributes
     ----------
 
-    yb      : array (n,1)
-              bin ids for observations,
-    bins    : array (k,1)
-              the upper bounds of each class
+    yb      : array
+              (n,1), bin ids for observations,
+    bins    : array
+              (k,1), the upper bounds of each class
     k       : int
               the number of classes
-    counts  : array (k,1)
-              the number of observations falling in each class
+    counts  : array
+              (k,1), the number of observations falling in each class
 
     Examples
     --------
@@ -1496,7 +1545,7 @@ class Max_P_Classifier(Map_Classifier):
     >>> cal = pysal.esda.mapclassify.load_example()
     >>> mp = pysal.Max_P_Classifier(cal)
     >>> mp.bins
-    [8.6999999999999993, 16.699999999999999, 20.469999999999999, 66.260000000000005, 4111.4499999999998]
+    array([    8.7 ,    16.7 ,    20.47,    66.26,  4111.45])
     >>> mp.counts
     array([29,  8,  1, 10, 10])
 
@@ -1524,9 +1573,9 @@ class Max_P_Classifier(Map_Classifier):
             seeds = [np.nonzero(di == min(
                 di))[0][0] for di in [np.abs(x - qi) for qi in q]]
             rseeds = np.random.permutation(range(k)).tolist()
-            tmp = [remaining.remove(seed) for seed in seeds]
+            [remaining.remove(seed) for seed in seeds]
             self.classes = classes = []
-            tmp = [classes.append([seed]) for seed in seeds]
+            [classes.append([seed]) for seed in seeds]
             while rseeds:
                 seed_id = rseeds.pop()
                 current = classes[seed_id]
@@ -1566,7 +1615,6 @@ class Max_P_Classifier(Map_Classifier):
             for a in cl:
                 a2c[a] = r
         swapping = True
-        it = 0
         while swapping:
             rseeds = np.random.permutation(range(k)).tolist()
             total_moves = 0
@@ -1604,7 +1652,7 @@ class Max_P_Classifier(Map_Classifier):
                 swapping = False
         xs = self.y.copy()
         xs.sort()
-        self.bins = [xs[cl][-1] for cl in classes]
+        self.bins = np.array([xs[cl][-1] for cl in classes])
 
     def _ss(self, class_def):
         """calculates sum of squares for a class"""
@@ -1637,9 +1685,11 @@ def _fit(y, classes):
 
     Parameters
     ----------
-    y : array, variable to be classified
+    y : array
+        (n,1), variable to be classified
 
-    classes : array, integer values denoting class membership
+    classes : array
+              (k,1), integer values denoting class membership
 
     """
     tss = 0
@@ -1665,24 +1715,22 @@ def gadf(y, method="Quantiles", maxk=15, pct=0.8):
     Parameters
     ----------
 
-    y      : array (nx1)
-             values to be classified
-    method : string
-             Name of classifier ["Quantiles,"Fisher_Jenks","Maximum_Breaks",
-             "Natural_Breaks"]
+    y      : array
+             (n, 1) values to be classified
+    method : {'Quantiles, 'Fisher_Jenks', 'Maximum_Breaks', 'Natrual_Breaks'}
     maxk   : int
              maximum value of k to evaluate
     pct    : float
              The percentage of GADF to exceed
 
-
     Returns
     -------
-
-    implicit : tuple
-               first value is k, second value is instance of classifier at k,
-               third is the pct obtained
-
+    k : int
+        number of classes
+    cl : object
+         instance of the classifier at k
+    gadf : float
+           goodness of absolute deviation fit
 
     Examples
     --------
@@ -1710,7 +1758,8 @@ def gadf(y, method="Quantiles", maxk=15, pct=0.8):
 
         .. math::
 
-            GADF = 1 - \sum_c \sum_{i \in c} |y_i - y_{c,med}|  / \sum_i |y_i - y_{med}|
+            GADF = 1 - \sum_c \sum_{i \in c}
+                   |y_i - y_{c,med}|  / \sum_i |y_i - y_{med}|
 
         where :math:`y_{med}` is the global median and :math:`y_{c,med}` is
         the median for class :math:`c`.
@@ -1736,18 +1785,18 @@ class K_classifiers:
 
     Parameters
     ----------
-    y      : array (nx1)
-             values to be classified
+    y      : array
+             (n,1), values to be classified
     pct    : float
              The percentage of GADF to exceed
 
-
     Attributes
     ----------
-    best   :  instance of Map_Classifier
-              the optimal classifer
+    best   :  object
+              instance of the optimal Map_Classifier
     results : dictionary
-              keys are classifier names, values are the Map_Classifier instances with the best pct for each classifer
+              keys are classifier names, values are the Map_Classifier
+              instances with the best pct for each classifer
 
     Examples
     --------
@@ -1773,7 +1822,6 @@ class K_classifiers:
     """
     def __init__(self, y, pct=0.8):
         results = {}
-        c = 0
         best = gadf(y, "Fisher_Jenks", maxk=len(y) - 1, pct=pct)
         pct0 = best[0]
         k0 = best[-1]
@@ -1809,6 +1857,25 @@ def fj(x, k=5):
 def opt_part(x):
     """
     Find optimal bi-partition of x values
+
+    Parameters
+    -----------
+
+    x : array
+        (n,1), Array of attribute values
+
+    Returns
+    -------
+    opt_i : int
+            partition index
+    tss : float
+          toal sum of squares
+    left_min : float
+               variance to the left of the break (including the break)
+    right_min : float
+                variance to the right of the break
+
+
     """
 
     n = len(x)

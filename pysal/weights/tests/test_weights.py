@@ -19,7 +19,7 @@ class TestW(unittest.TestCase):
 
     def test_W(self):
         w = pysal.W(self.neighbors, self.weights)
-        self.assertEqual(w.pct_nonzero, 0.29629629629629628)
+        self.assertEqual(w.pct_nonzero, 29.62962962962963)
 
     def test___getitem__(self):
         self.assertEqual(
@@ -27,15 +27,15 @@ class TestW(unittest.TestCase):
 
     def test___init__(self):
         w = pysal.W(self.neighbors, self.weights)
-        self.assertEqual(w.pct_nonzero, 0.29629629629629628)
+        self.assertEqual(w.pct_nonzero, 29.62962962962963)
 
     def test___iter__(self):
         w = pysal.lat2W(3, 3)
         res = {}
         for i, wi in enumerate(w):
             res[i] = wi
-        self.assertEqual(res[0], {1: 1.0, 3: 1.0})
-        self.assertEqual(res[8], {5: 1.0, 7: 1.0})
+        self.assertEqual(res[0], (0, {1: 1.0, 3: 1.0}))
+        self.assertEqual(res[8], (8, {5: 1.0, 7: 1.0}))
 
     def test_asymmetries(self):
         w = pysal.lat2W(3, 3)
@@ -92,9 +92,9 @@ class TestW(unittest.TestCase):
         weights = {0: [1.0, 1.0, 1.0], 1: [1.0, 1.0, 1.0], 2: [1.0, 1.0, 1.0], 3: [1.0, 1.0,
                                                                                    1.0], 4: [1.0, 1.0, 1.0, 1.0], 5: [1.0, 1.0, 1.0], 6: [1.0, 1.0, 1.0], 7:
                    [1.0, 1.0, 1.0], 8: [1.0, 1.0, 1.0]}
-        neighbors = {0: [2, 4, 6], 1: [3, 5, 7], 2: [0, 4, 8], 3: [1, 5, 7],
-                     4: [0, 2, 6, 8], 5: [1, 3, 7], 6: [0, 4, 8], 7: [1, 3, 5], 8:
-                     [2, 4, 6]}
+        neighbors = {0: [4, 6, 2], 1: [3, 5, 7], 2: [8, 0, 4], 3: [7, 1, 5],
+                     4: [8, 0, 2, 6], 5: [1, 3, 7], 6: [4, 0, 8], 7: [3, 1, 5], 8:
+                     [6, 2, 4]}
         w2 = pysal.higher_order(self.w3x3, 2)
         self.assertEqual(w2.neighbors, neighbors)
         self.assertEqual(w2.weights, weights)
@@ -167,7 +167,7 @@ class TestW(unittest.TestCase):
         self.assertEquals(pysal.order(w), o)
 
     def test_pct_nonzero(self):
-        self.assertEqual(self.w3x3.pct_nonzero, 0.29629629629629628)
+        self.assertEqual(self.w3x3.pct_nonzero, 29.62962962962963)
 
     def test_s0(self):
         self.assertEqual(self.w3x3.s0, 24.0)
@@ -237,7 +237,7 @@ class Test_WSP_Back_To_W(unittest.TestCase):
 
     def test_W(self):
         w = pysal.W(self.neighbors, self.weights)
-        self.assertEqual(w.pct_nonzero, 0.29629629629629628)
+        self.assertEqual(w.pct_nonzero, 29.62962962962963)
 
     def test___getitem__(self):
         self.assertEqual(
@@ -245,15 +245,15 @@ class Test_WSP_Back_To_W(unittest.TestCase):
 
     def test___init__(self):
         w = pysal.W(self.neighbors, self.weights)
-        self.assertEqual(w.pct_nonzero, 0.29629629629629628)
+        self.assertEqual(w.pct_nonzero, 29.62962962962963)
 
     def test___iter__(self):
         w = pysal.lat2W(3, 3)
         res = {}
         for i, wi in enumerate(w):
             res[i] = wi
-        self.assertEqual(res[0], {1: 1.0, 3: 1.0})
-        self.assertEqual(res[8], {5: 1.0, 7: 1.0})
+        self.assertEqual(res[0], (0, {1: 1.0, 3: 1.0}))
+        self.assertEqual(res[8], (8, {5: 1.0, 7: 1.0}))
 
     def test_asymmetries(self):
         w = pysal.lat2W(3, 3)
@@ -309,9 +309,9 @@ class Test_WSP_Back_To_W(unittest.TestCase):
         weights = {0: [1.0, 1.0, 1.0], 1: [1.0, 1.0, 1.0], 2: [1.0, 1.0, 1.0], 3: [1.0, 1.0,
                                                                                    1.0], 4: [1.0, 1.0, 1.0, 1.0], 5: [1.0, 1.0, 1.0], 6: [1.0, 1.0, 1.0], 7:
                    [1.0, 1.0, 1.0], 8: [1.0, 1.0, 1.0]}
-        neighbors = {0: [2, 4, 6], 1: [3, 5, 7], 2: [0, 4, 8], 3: [1, 5, 7],
-                     4: [0, 2, 6, 8], 5: [1, 3, 7], 6: [0, 4, 8], 7: [1, 3, 5], 8:
-                     [2, 4, 6]}
+        neighbors = {0: [4, 6, 2], 1: [3, 5, 7], 2: [8, 0, 4], 3: [7, 1, 5],
+                     4: [8, 0, 2, 6], 5: [1, 3, 7], 6: [4, 0, 8], 7: [3, 1, 5], 8:
+                     [6, 2, 4]}
         w2 = pysal.higher_order(self.w3x3, 2)
         self.assertEqual(w2.neighbors, neighbors)
         self.assertEqual(w2.weights, weights)
@@ -371,7 +371,7 @@ class Test_WSP_Back_To_W(unittest.TestCase):
         self.assertEquals(pysal.order(w), o)
 
     def test_pct_nonzero(self):
-        self.assertEqual(self.w3x3.pct_nonzero, 0.29629629629629628)
+        self.assertEqual(self.w3x3.pct_nonzero, 29.62962962962963)
 
     def test_s0(self):
         self.assertEqual(self.w3x3.s0, 24.0)

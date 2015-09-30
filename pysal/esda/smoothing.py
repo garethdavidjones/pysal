@@ -30,13 +30,15 @@ def flatten(l, unique=True):
 
     Parameters
     ----------
-    l          : list of lists
+    l          : list
+                 of lists
     unique     : boolean
-                 whether or not only unique items are wanted
+                 whether or not only unique items are wanted (default=True)
 
     Returns
     -------
-               : list of single items
+    list
+        of single items
 
     Examples
     --------
@@ -62,10 +64,10 @@ def weighted_median(d, w):
 
     Parameters
     ----------
-    d          : array (n, 1)
-                 variable for which median will be found
-    w          : array (n, 1)
-                 variable on which d's medain will be decided
+    d          : array
+                 (n, 1), variable for which median will be found
+    w          : array
+                 (n, 1), variable on which d's medain will be decided
 
     Notes
     -----
@@ -73,8 +75,8 @@ def weighted_median(d, w):
 
     Returns
     -------
-               : numeric
-                 median of d
+    float
+        median of d
 
     Examples
     --------
@@ -113,18 +115,18 @@ def sum_by_n(d, w, n):
 
     Parameters
     ----------
-    d          : array(t, 1)
-                 numerical values
-    w          : array(t, 1)
-                 numerical values for weighting
+    d          : array
+                 (t, 1), numerical values
+    w          : array
+                 (t, 1), numerical values for weighting
     n          : integer
                  the number of groups
                  t = c*n (c is a constant)
 
     Returns
     -------
-               : array(n, 1)
-                 an array with summarized values
+               : array
+                 (n, 1), an array with summarized values
 
     Examples
     --------
@@ -159,10 +161,10 @@ def crude_age_standardization(e, b, n):
 
     Parameters
     ----------
-    e          : array(n*h, 1)
-                 event variable measured for each age group across n spatial units
-    b          : array(n*h, 1)
-                 population at risk variable measured for each age group across n spatial units
+    e          : array
+                 (n*h, 1), event variable measured for each age group across n spatial units
+    b          : array
+                 (n*h, 1), population at risk variable measured for each age group across n spatial units
     n          : integer
                  the number of spatial units
 
@@ -172,8 +174,8 @@ def crude_age_standardization(e, b, n):
 
     Returns
     -------
-               : array(n, 1)
-                 age standardized rate
+               : array
+                 (n, 1), age standardized rate
 
     Examples
     --------
@@ -212,12 +214,12 @@ def direct_age_standardization(e, b, s, n, alpha=0.05):
 
     Parameters
     ----------
-    e          : array(n*h, 1)
-                 event variable measured for each age group across n spatial units
-    b          : array(n*h, 1)
-                 population at risk variable measured for each age group across n spatial units
-    s          : array(n*h, 1)
-                 standard population for each age group across n spatial units
+    e          : array
+                 (n*h, 1), event variable measured for each age group across n spatial units
+    b          : array
+                 (n*h, 1), population at risk variable measured for each age group across n spatial units
+    s          : array
+                 (n*h, 1), standard population for each age group across n spatial units
     n          : integer
                  the number of spatial units
     alpha      : float
@@ -229,8 +231,9 @@ def direct_age_standardization(e, b, s, n, alpha=0.05):
 
     Returns
     -------
-               : a list of n tuples; a tuple has a rate and its lower and upper limits
-                 age standardized rates and confidence intervals
+    list
+        a list of n tuples; a tuple has a rate and its lower and upper limits
+        age standardized rates and confidence intervals
 
     Examples
     --------
@@ -293,14 +296,14 @@ def indirect_age_standardization(e, b, s_e, s_b, n, alpha=0.05):
 
     Parameters
     ----------
-    e          : array(n*h, 1)
-                 event variable measured for each age group across n spatial units
-    b          : array(n*h, 1)
-                 population at risk variable measured for each age group across n spatial units
-    s_e        : array(n*h, 1)
-                 event variable measured for each age group across n spatial units in a standard population
-    s_b        : array(n*h, 1)
-                 population variable measured for each age group across n spatial units in a standard population
+    e          : array
+                 (n*h, 1), event variable measured for each age group across n spatial units
+    b          : array
+                 (n*h, 1), population at risk variable measured for each age group across n spatial units
+    s_e        : array
+                 (n*h, 1), event variable measured for each age group across n spatial units in a standard population
+    s_b        : array
+                 (n*h, 1), population variable measured for each age group across n spatial units in a standard population
     n          : integer
                  the number of spatial units
     alpha      : float
@@ -312,8 +315,9 @@ def indirect_age_standardization(e, b, s_e, s_b, n, alpha=0.05):
 
     Returns
     -------
-               : a list of n tuples; a tuple has a rate and its lower and upper limits
-                 age standardized rate
+    list
+        a list of n tuples; a tuple has a rate and its lower and upper limits
+        age standardized rate
 
     Examples
     --------
@@ -373,14 +377,14 @@ def standardized_mortality_ratio(e, b, s_e, s_b, n):
 
     Parameters
     ----------
-    e          : array(n*h, 1)
-                 event variable measured for each age group across n spatial units
-    b          : array(n*h, 1)
-                 population at risk variable measured for each age group across n spatial units
-    s_e        : array(n*h, 1)
-                 event variable measured for each age group across n spatial units in a standard population
-    s_b        : array(n*h, 1)
-                 population variable measured for each age group across n spatial units in a standard population
+    e          : array
+                 (n*h, 1), event variable measured for each age group across n spatial units
+    b          : array
+                 (n*h, 1), population at risk variable measured for each age group across n spatial units
+    s_e        : array
+                 (n*h, 1), event variable measured for each age group across n spatial units in a standard population
+    s_b        : array
+                 (n*h, 1), population variable measured for each age group across n spatial units in a standard population
     n          : integer
                  the number of spatial units
 
@@ -390,7 +394,8 @@ def standardized_mortality_ratio(e, b, s_e, s_b, n):
 
     Returns
     -------
-               : array (nx1)
+    array
+        (nx1)
 
     Examples
     --------
@@ -433,7 +438,7 @@ def standardized_mortality_ratio(e, b, s_e, s_b, n):
 
 
 def choynowski(e, b, n, threshold=None):
-    """Choynowski map probabilities.
+    """Choynowski map probabilities [Choynowski1959]_ .
 
     Parameters
     ----------
@@ -453,11 +458,6 @@ def choynowski(e, b, n, threshold=None):
     Returns
     -------
                : array (nx1)
-
-    References
-    ----------
-    [1] M. Choynowski. 1959. Maps based on probabilities. Journal of the
-        American Statistical Association, 54, 385-388.
 
     Examples
     --------
@@ -504,7 +504,7 @@ def assuncao_rate(e, b):
     """The standardized rates where the mean and stadard deviation used for
     the standardization are those of Empirical Bayes rate estimates
     The standardized rates resulting from this function are used to compute
-    Moran's I corrected for rate variables.
+    Moran's I corrected for rate variables [Choynowski1959]_ .
 
     Parameters
     ----------
@@ -520,11 +520,6 @@ def assuncao_rate(e, b):
     Returns
     -------
                : array (nx1)
-
-    References
-    ----------
-    [1] Assuncao R. M. and Reis E. A., 1999, A new proposal to adjust Moran's I
-    for population density. Statistics in Medicine, 18, 2147-2162.
 
     Examples
     --------
@@ -551,7 +546,7 @@ def assuncao_rate(e, b):
     e_sum, b_sum = sum(e), sum(b)
     ebi_b = e_sum * 1.0 / b_sum
     s2 = sum(b * ((y - ebi_b) ** 2)) / b_sum
-    ebi_a = s2 - ebi_b / (b_sum / len(e))
+    ebi_a = s2 - ebi_b / (float(b_sum) / len(e))
     ebi_v = ebi_a + ebi_b / b
     return (y - ebi_b) / np.sqrt(ebi_v)
 
@@ -1254,7 +1249,7 @@ class Headbanging_Triples:
 
     importing k-nearest neighbor weights creator
 
-    >>> from pysal import knnW
+    >>> from pysal import knnW_from_array
 
     Reading data in stl_hom.csv into stl_db to extract values
     for event and population-at-risk variables
@@ -1273,7 +1268,7 @@ class Headbanging_Triples:
 
     Using the centroids, we create a 5-nearst neighbor weights
 
-    >>> w = knnW(d,k=5)
+    >>> w = knnW_from_array(d,k=5)
 
     Ensuring that the elements in the spatial weights instance are ordered
     by the order of stl_db's IDs
@@ -1303,7 +1298,7 @@ class Headbanging_Triples:
 
     Creating a 5-nearest neighbors weights from the sids centroids
 
-    >>> sids_w = knnW(sids_d,k=5)
+    >>> sids_w = knnW_from_array(sids_d,k=5)
 
     Ensuring that the members in sids_w are ordered by
     the order of sids_d's ID
@@ -1437,7 +1432,7 @@ class Headbanging_Median_Rate:
 
     importing k-nearest neighbor weights creator
 
-    >>> from pysal import knnW
+    >>> from pysal import knnW_from_array
 
     opening the sids2 shapefile
 
@@ -1449,7 +1444,7 @@ class Headbanging_Median_Rate:
 
     creating a 5-nearest neighbors weights from the centroids
 
-    >>> sids_w = knnW(sids_d,k=5)
+    >>> sids_w = knnW_from_array(sids_d,k=5)
 
     ensuring that the members in sids_w are ordered
 
